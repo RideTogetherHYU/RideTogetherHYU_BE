@@ -2,6 +2,8 @@ package com.ridetogether.server.global.security.domain;
 
 import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
+import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
+import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -113,7 +115,7 @@ public class JwtTokenProvider {
 		// UserDetails 객체를 만들어서 Authentication return
 		// UserDetails: interface, User: UserDetails를 구현한 class
 		String memberId = (String) claims.get("memberId");
-		Member member = memberRepository.findByEmail(memberId);
+		Member member = memberRepository.findByEmail(memberId).orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));;
 		UserDetails principal = new CustomUserDetails(member);
 		return new UsernamePasswordAuthenticationToken(principal, "", authorities);
 	}

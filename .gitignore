@@ -42,3 +42,5 @@ application-jwt.yml
 application-oauth.yml
 SecurityConfig.java
 Wallet_RideTogetherDB.zip
+
+.DS_STORE

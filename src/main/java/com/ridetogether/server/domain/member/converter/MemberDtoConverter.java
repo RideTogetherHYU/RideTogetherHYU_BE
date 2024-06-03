@@ -24,7 +24,7 @@ public class MemberDtoConverter {
 				.kakaoPayUrl(dto.getKakaoPayUrl())
 				.account(dto.getAccount())
 				.accountBank(Bank.fromName(dto.getAccountBank()))
-				.role(Role.ADMIN)
+				.role(Role.ROLE_ADMIN)
 				.build();
 	}
 

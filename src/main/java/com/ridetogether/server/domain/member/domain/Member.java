@@ -2,6 +2,7 @@ package com.ridetogether.server.domain.member.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ridetogether.server.domain.image.domain.Image;
+import com.ridetogether.server.domain.matching.domain.MemberMatching;
 import com.ridetogether.server.domain.member.dto.MemberDto.MemberUpdateDto;
 import com.ridetogether.server.domain.member.dto.MemberRequestDto.UpdateMemberRequestDto;
 import com.ridetogether.server.domain.member.model.ActiveState;
@@ -10,16 +11,11 @@ import com.ridetogether.server.domain.member.model.Gender;
 import com.ridetogether.server.domain.member.model.PayType;
 import com.ridetogether.server.domain.member.model.StudentStatus;
 import com.ridetogether.server.domain.member.model.Role;
+import com.ridetogether.server.domain.report.domain.Report;
+import com.ridetogether.server.domain.report.domain.ReportStatus;
 import com.ridetogether.server.global.common.BaseTimeEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,9 +27,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 @AllArgsConstructor
-@Table(name = "Member")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseTimeEntity {
+
+	private static final String HANYANG_EMAIL = "@hanyang.ac.kr";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,6 +61,7 @@ public class Member extends BaseTimeEntity {
 	@Enumerated(EnumType.STRING)
 	private Bank accountBank;
 
+	@ElementCollection
 	@Enumerated(EnumType.STRING)
 	private List<PayType> payTypes;
 
@@ -83,6 +81,15 @@ public class Member extends BaseTimeEntity {
 	@JsonIgnore
 	private List<Image> images;
 
+	@OneToMany(mappedBy = "member")
+	@JsonIgnore
+	private List<ReportStatus> reportStatuses;
+
+
+	@OneToMany(mappedBy = "member")
+	@JsonIgnore
+	private List<MemberMatching> memberMatching;
+
 	public void updateRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
@@ -92,7 +99,7 @@ public class Member extends BaseTimeEntity {
 	}
 
 	public void setStudentStatus(String memberId) {
-		if (memberId.contains("@hanyang.ac.kr")) {
+		if (memberId.contains(HANYANG_EMAIL)) {
 			this.studentStatus = StudentStatus.STUDENT;
 		} else {
 			this.studentStatus = StudentStatus.NOT_STUDENT;
@@ -100,11 +107,11 @@ public class Member extends BaseTimeEntity {
 	}
 
 	public boolean isStudent() {
-		return this.role == Role.STUDENT;
+		return this.role == Role.ROLE_STUDENT;
 	}
 
 	public boolean isAdmin() {
-		return this.role == Role.ADMIN;
+		return this.role == Role.ROLE_ADMIN;
 	}
 
 	public void updateMember(MemberUpdateDto dto) {
@@ -118,6 +125,13 @@ public class Member extends BaseTimeEntity {
 
 	public void updatePassword(String password) {
 		this.password = password;
+	}
 
+	public void updateStudentStatus(StudentStatus studentStatus) {
+		this.studentStatus = studentStatus;
+	}
+
+	public void updateRole(Role role) {
+		this.role = role;
 	}
 }
