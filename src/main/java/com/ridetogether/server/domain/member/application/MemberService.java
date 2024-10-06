@@ -1,8 +1,7 @@
 package com.ridetogether.server.domain.member.application;
 
-import static com.ridetogether.server.global.config.SecurityConfig.passwordEncoder;
 import static org.bouncycastle.asn1.x500.style.RFC4519Style.member;
-
+import static com.ridetogether.server.global.config.SecurityConfig.passwordEncoder;
 import com.ridetogether.server.domain.image.application.ImageService;
 import com.ridetogether.server.domain.image.domain.Image;
 import com.ridetogether.server.domain.image.dto.ImageDto.ImageUriResponseDto;

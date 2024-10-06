@@ -53,6 +53,10 @@ public enum ErrorStatus implements BaseErrorCode {
     REPORT_TITLE_NULL(HttpStatus.BAD_REQUEST, "REPORT4002", "신고제목을 작성해주세요."),
     REPORT_CONTENT_NULL(HttpStatus.BAD_REQUEST, "REPORT4003", "신고내용을 작성해주세요."),
 
+    // 소셜로그인 응답
+    KAKAO_SOCIAL_LOGIN_FAIL(HttpStatus.BAD_REQUEST, "SOCIAL4002", "KAKAO 소셜 정보를 불러오는데에 실패하였습니다."),
+    KAKAO_SOCIAL_UNLINK_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "SOCIAL5001", "KAKAO 소셜 연동 해제에 실패하였습니다."),
+
     //푸시알림 응답
     ALARM_SEND_FAIL(HttpStatus.BAD_REQUEST,"ALARM4001", "알림 보내기를 실패하였습니다.");
     private final HttpStatus httpStatus;
