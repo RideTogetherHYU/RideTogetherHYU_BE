@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,10 +34,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @RestController
 //@RequestMapping("/api/member")
-@Slf4j
 public class MemberController {
 
 	private final MemberService memberService;
@@ -55,8 +57,14 @@ public class MemberController {
 	@GetMapping("/api/member")
 	@ResponseStatus(HttpStatus.OK)
 	public ApiResponse<MemberInfoResponseDto> getMyInfo() {
-		MemberInfoResponseDto memberInfoResponseDto = memberService.getMyInfo();
-		return ApiResponse.onSuccess(memberInfoResponseDto);
+		return ApiResponse.onSuccess(memberService.getMyInfo());
+	}
+
+	@GetMapping("/api/member/all")
+	@PreAuthorize("hasRole('ADMIN')")
+	@ResponseStatus(HttpStatus.OK)
+	public ApiResponse<List<MemberInfoResponseDto>> getAllMemberInfo() {
+		return ApiResponse.onSuccess(memberService.getAllMemberInfo());
 	}
 
 	@PostMapping(value = "/api/member/image/{type}")

@@ -1,6 +1,7 @@
 package com.ridetogether.server.domain.member.application;
 
 import static com.ridetogether.server.global.config.SecurityConfig.passwordEncoder;
+import static org.bouncycastle.asn1.x500.style.RFC4519Style.member;
 
 import com.ridetogether.server.domain.image.application.ImageService;
 import com.ridetogether.server.domain.image.domain.Image;
@@ -20,6 +21,8 @@ import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
 import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
 import com.ridetogether.server.global.security.application.JwtService;
 import com.ridetogether.server.global.util.SecurityUtil;
+
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,6 +79,13 @@ public class MemberService {
 		return MemberDtoConverter.convertMemberToInfoResponseDto(member);
 	}
 
+	public List<MemberInfoResponseDto> getAllMemberInfo() {
+		List<MemberInfoResponseDto> dtoList = new ArrayList<>();
+		List<Member> members = memberRepository.findAll();
+		members.forEach(member -> dtoList.add(MemberDtoConverter.convertMemberToInfoResponseDto(member)));
+		return dtoList;
+	}
+
 	public ImageUriResponseDto getImage(ImageType imageType, Long idx) {
 		Member member = memberRepository.findByIdx(idx)
 				.orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -125,6 +135,12 @@ public class MemberService {
 			}
 		}
 
+	}
+
+	public void updateStudentStatusToStudent(Long memberIdx) {
+		Member member = memberRepository.findByIdx(memberIdx)
+				.orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		member.updateStudentStatus(StudentStatus.STUDENT);
 	}
 
 	public boolean isExistByEmail(String email) {

@@ -3,9 +3,9 @@ package com.ridetogether.server.domain.member.model;
 public enum Role {
 
 	//guest와 user라는 권한 목록 생성
-	GUEST("ROLE_GUEST", "손님"),
-	STUDENT("ROLE_STUDENT", "학생"),
-	ADMIN("ROLE_ADMIN", "관리자");
+	ROLE_GUEST("ROLE_GUEST", "손님"),
+	ROLE_STUDENT("ROLE_STUDENT", "학생"),
+	ROLE_ADMIN("ROLE_ADMIN", "관리자");
 
 	//각 권한이 가질 필드 선언 + 생성자 주입
 	private final String key;
