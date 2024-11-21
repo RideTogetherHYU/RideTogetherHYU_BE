@@ -26,7 +26,6 @@ public class ChatRoomController {
     private final ChatMessageService chatMessageService;
     private final ChatRoomService chatRoomService;
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
 
     @GetMapping("/room/all")
     @ResponseStatus(HttpStatus.OK)
@@ -39,7 +38,8 @@ public class ChatRoomController {
 
     @PostMapping("/room/{matchingIdx}")
     public ApiResponse<CreateChatRoomResponseDto> createRoom(@PathVariable(value = "matchingIdx") Long matchingIdx) {
-        Member member = SecurityUtil.getLoginMember().orElseThrow(() -> new ErrorHandler(ErrorStatus._UNAUTHORIZED));
+        String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus._UNAUTHORIZED));
+        Member member = memberService.findByMemberId(memberId);
         return ApiResponse.onSuccess(chatRoomService.createChatRoom(matchingIdx, member.getIdx()));
     }
 

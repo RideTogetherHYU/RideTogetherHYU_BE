@@ -59,6 +59,8 @@ public class Matching extends BaseTimeEntity implements Serializable {
 
     private LocalDate expiredAt;
 
+    private int price;
+
     @OneToMany(mappedBy = "matching")
     @JsonIgnore
     @Builder.Default
@@ -70,6 +72,9 @@ public class Matching extends BaseTimeEntity implements Serializable {
 
     public void updateMatchingStatus(MatchingStatus matchingStatus) {
         this.matchingStatus = matchingStatus;
+    }
+    public void updatePrice(int price) {
+        this.price = price;
     }
 
     public void plusParticipantCount() {

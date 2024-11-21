@@ -6,6 +6,7 @@ import com.ridetogether.server.domain.mail.dto.MailResponseDto;
 import com.ridetogether.server.domain.mail.dto.MailResponseDto.CheckMailResponseDto;
 import com.ridetogether.server.domain.mail.application.MailService;
 import com.ridetogether.server.domain.member.application.MemberService;
+import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.global.apiPayload.ApiResponse;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
@@ -23,6 +24,7 @@ public class MailController {
 
     private final MailService mailService;
     private final MemberService memberService;
+
 
 
     @PostMapping("/api/email/send")
@@ -46,8 +48,9 @@ public class MailController {
     public ApiResponse<CheckMailResponseDto> confirmVerificationHanyangEmail(@RequestBody @Valid CheckMailRequestDto dto) {
         CheckMailResponseDto checkMailResponseDto = mailService.checkEmail(dto.getEmail(), dto.getAuthNumber());
         if (checkMailResponseDto.isSuccess()) {
-            Member loginMember = SecurityUtil.getLoginMember()
+            String memberId = SecurityUtil.getLoginMemberId()
                     .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+            Member loginMember = memberService.findByMemberId(memberId);
             memberService.updateStudentStatusToStudent(loginMember.getIdx());
         }
         return ApiResponse.onSuccess(checkMailResponseDto);

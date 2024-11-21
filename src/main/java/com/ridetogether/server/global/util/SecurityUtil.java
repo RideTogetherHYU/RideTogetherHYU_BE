@@ -6,9 +6,9 @@ import java.util.Optional;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityUtil {
-	public static Optional<Member> getLoginMember(){
+	public static Optional<String> getLoginMemberId(){
 		CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-		return Optional.ofNullable(user.getMember());
+		return Optional.ofNullable(user.getMemberId());
 	}
 
 }

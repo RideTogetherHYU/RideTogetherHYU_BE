@@ -8,6 +8,8 @@ import com.ridetogether.server.domain.chat.dto.ChatMessageDto;
 import com.ridetogether.server.domain.chatroom.application.ChatRoomService;
 import com.ridetogether.server.domain.chatroom.dao.RedisRepository;
 import com.ridetogether.server.domain.chatroom.domain.ChatRoom;
+import com.ridetogether.server.domain.member.application.MemberService;
+import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.global.apiPayload.ApiResponse;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
@@ -37,6 +39,7 @@ public class ChatMessageController {
 
     private final ChatRoomService chatRoomService;
     private final RedisRepository redisRepository;
+    private final MemberService memberService;
 
     // 채팅방(topic)에 발행되는 메시지를 처리할 Listner
     private final RedisMessageListenerContainer redisMessageListener;
@@ -48,8 +51,8 @@ public class ChatMessageController {
     @MessageMapping("/chat/enter")
     public void enterUser(@Payload ChatMessageDto chatMessageDto) {
 
-        Member loginMember = SecurityUtil.getLoginMember()
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+        Member loginMember = memberService.findByMemberId(memberId);
         // 채팅방 유저+1
         redisRepository.plusUserCnt(chatMessageDto.getChatRoomId());
 

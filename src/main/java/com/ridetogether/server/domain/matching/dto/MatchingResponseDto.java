@@ -46,5 +46,6 @@ public class MatchingResponseDto {
         private List<String> payTypes;
         private Long chatRoomIdx;
         private String expiredAt;
+        private int price;
     }
 }

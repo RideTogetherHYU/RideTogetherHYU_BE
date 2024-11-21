@@ -4,6 +4,7 @@ import com.ridetogether.server.domain.image.application.OracleImageService;
 import com.ridetogether.server.domain.image.dto.ImageDto.ImageUriResponseDto;
 import com.ridetogether.server.domain.image.model.ImageType;
 import com.ridetogether.server.domain.member.application.MemberService;
+import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.domain.member.dto.MemberDto.MemberSignupDto;
 import com.ridetogether.server.domain.member.dto.MemberRequestDto.CreateMemberRequestDto;
@@ -71,8 +72,8 @@ public class MemberController {
 	public ApiResponse<ImageUriResponseDto> uploadImage(@RequestPart(value="image", required = true) MultipartFile image,
 														@PathVariable("type") String type) throws Exception{
 		ImageType imageType = ImageType.fromName(type);
-		Member loginMember = SecurityUtil.getLoginMember()
-				.orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		Member loginMember = memberService.findByMemberId(memberId);
 
 		Long imageIdx;
 		if (imageType == ImageType.KAKAO) {
@@ -96,8 +97,8 @@ public class MemberController {
 
 	@GetMapping("/api/member/image/{type}")
 	public ApiResponse<ImageUriResponseDto> getImage(@PathVariable("type") String type) throws Exception{
-		Member loginMember = SecurityUtil.getLoginMember()
-				.orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+		Member loginMember = memberService.findByMemberId(memberId);
 		return ApiResponse.onSuccess(memberService.getImage(ImageType.fromName(type), loginMember.getIdx()));
 	}
 

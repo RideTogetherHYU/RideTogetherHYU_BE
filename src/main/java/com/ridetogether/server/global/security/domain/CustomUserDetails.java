@@ -1,5 +1,6 @@
 package com.ridetogether.server.global.security.domain;
 
+import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.global.oauth2.model.SocialType;
 import jakarta.persistence.ElementCollection;
@@ -9,49 +10,56 @@ import java.util.*;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
+@Builder
 public class CustomUserDetails implements UserDetails {
 
-	private final Member member;
 
-	public CustomUserDetails(Member member) {
-		this.member = member;
-	}
-
-	public Member getMember() {
-		return member;
-	}
+	@Getter
+	private SocialType socialType;
+	@Getter
+	private String memberId;
+	@Getter
+	private String email;
+	private String username;
+	private Collection<? extends GrantedAuthority> authorities;
 
 	@ElementCollection(fetch = FetchType.EAGER)
+	@Builder.Default
 	private List<String> roles = new ArrayList<>();
 
-//	@Override
-//	public Collection<? extends GrantedAuthority> getAuthorities() {
-//		return this.roles.stream()
-//				.map(SimpleGrantedAuthority::new)
-//				.collect(Collectors.toList());
-//	}
+	public static CustomUserDetails create(Member member) {
+		return CustomUserDetails.builder()
+				.memberId(member.getMemberId())
+				.email(member.getEmail())
+				.socialType(member.getSocialType())
+				.authorities(AuthorityUtils.createAuthorityList(member.getRole().toString()))
+				.build();
+	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return AuthorityUtils.createAuthorityList(member.getRole().toString());
-//		return null;
+		return authorities;
+	}
+
+	public void updateAuthorities(Member member) {
+		this.authorities = AuthorityUtils.createAuthorityList(member.getRole().toString());
 	}
 
 	@Override
 	public String getPassword() {
-		return member.getPassword();
+		return null;
 	}
 
 	@Override
 	public String getUsername() {
-		return member.getMemberId();
+		return this.memberId;
 	}
 
-	public String getMemberId() {return member.getMemberId();}
 
 	@Override
 	public boolean isAccountNonExpired() {
@@ -72,4 +80,5 @@ public class CustomUserDetails implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+
 }

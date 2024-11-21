@@ -123,6 +123,7 @@ public class MatchingService {
                 )
                 .chatRoomIdx(chatRoomIdx)
                 .expiredAt(matching.getExpiredAt().toString())
+                .price(matching.getPrice())
                 .build();
     }
 
@@ -138,5 +139,13 @@ public class MatchingService {
         return "success";
     }
 
+    // 반환타입 이렇게 해도 되나
+    public String enterTaxiPrice(Long matchingIdx, int price) {
+        Matching matching = matchingRepository.findByIdx(matchingIdx)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
 
+        if (price < 0) throw new ErrorHandler(ErrorStatus.PRICE_INVALIDATE);
+        matching.updatePrice(price);
+        return "success";
+    }
 }

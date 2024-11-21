@@ -4,6 +4,7 @@ import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.model.Role;
 import com.ridetogether.server.global.oauth2.service.LoadMemberService;
 import com.ridetogether.server.domain.member.domain.Member;
+import com.ridetogether.server.global.security.domain.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
         // getOAuth2UserDetails에서 restTemplate과 AccessToken을 가지고 회원 정보 조회 -> 식별자 값 가져옴
-        OAuth2UserDetails OAuth2User = loadMemberService.getOAuth2UserDetails((AccessTokenSocialTypeToken) authentication);
+        CustomUserDetails OAuth2User = loadMemberService.getOAuth2UserDetails((AccessTokenSocialTypeToken) authentication);
 
         Member member = saveOrGet(OAuth2User); // 받아온 식별자 값과 소셜로그인 방식을 통해 DB에서 회원 조회 / 없으면 새로 등록
 //        OAuth2User.updateAuthorities(member); // 역할 넣기
@@ -43,7 +44,7 @@ public class AccessTokenAuthenticationProvider implements AuthenticationProvider
 
     }
 
-    private Member saveOrGet(OAuth2UserDetails oAuth2User) {
+    private Member saveOrGet(CustomUserDetails oAuth2User) {
         // 소셜타입 필드에 넣기 !!!!! 코드 전체적으로 손보기
         return memberRepository.findBySocialTypeAndMemberId(oAuth2User.getSocialType(), oAuth2User.getMemberId())
                 .orElseGet(() -> memberRepository.save(Member.builder()

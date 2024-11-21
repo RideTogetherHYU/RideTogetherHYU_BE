@@ -47,6 +47,7 @@ public enum ErrorStatus implements BaseErrorCode {
     MATCHING_NOT_FOUND(HttpStatus.BAD_REQUEST, "MATCH4001", "매칭이 존재하지 않습니다."),
     MATCHING_ALREADY_FINISH(HttpStatus.BAD_REQUEST, "MATCH4002", "이미 종료된 매칭입니다."),
     MATCHING_PARTICIPANT_FULL(HttpStatus.BAD_REQUEST, "MATCH4003", "매칭 참여인원이 가득 찼습니다."),
+    PRICE_INVALIDATE(HttpStatus.BAD_REQUEST, "MATCH4004", "정확한 금액을 입력해주세요."),
 
     // 신고 응답
     REPORT_NOT_FOUND(HttpStatus.BAD_REQUEST, "REPORT4001", "신고내역이 존재하지 않습니다."),

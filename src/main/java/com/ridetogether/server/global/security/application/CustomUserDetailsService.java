@@ -19,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
 		Member member = memberRepository.findByMemberId(memberId)
 				.orElseThrow(() -> new UsernameNotFoundException("해당하는 회원을 찾을 수 없습니다."));
-		return new CustomUserDetails(member);
+		return CustomUserDetails.create(member);
 	}
 
 }

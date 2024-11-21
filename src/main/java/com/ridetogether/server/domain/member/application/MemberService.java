@@ -74,7 +74,8 @@ public class MemberService {
 	}
 
 	public MemberInfoResponseDto getMyInfo() {
-		Member member = SecurityUtil.getLoginMember().orElseThrow(() -> new ErrorHandler(ErrorStatus._UNAUTHORIZED));
+		String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus._UNAUTHORIZED));
+		Member member = memberRepository.findByMemberId(memberId).orElseThrow(() -> new ErrorHandler(ErrorStatus._UNAUTHORIZED));
 		return MemberDtoConverter.convertMemberToInfoResponseDto(member);
 	}
 
@@ -140,6 +141,10 @@ public class MemberService {
 		Member member = memberRepository.findByIdx(memberIdx)
 				.orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 		member.updateStudentStatus(StudentStatus.STUDENT);
+	}
+
+	public Member findByMemberId(String memberId) {
+		return memberRepository.findByMemberId(memberId).orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 	}
 
 	public boolean isExistByEmail(String email) {
