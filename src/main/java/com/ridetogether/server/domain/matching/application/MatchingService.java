@@ -7,7 +7,6 @@ import com.ridetogether.server.domain.matching.dao.MemberMatchingRepository;
 import com.ridetogether.server.domain.matching.domain.Matching;
 import com.ridetogether.server.domain.matching.domain.MemberMatching;
 import com.ridetogether.server.domain.matching.dto.MatchingDto.CreateMatchingDto;
-import com.ridetogether.server.domain.matching.dto.MatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.CreateMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.JoinMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.MatchingInfoResponseDto;
@@ -20,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -44,7 +41,7 @@ public class MatchingService {
                 .hostMemberNickName(member.getNickName())
                 .title(dto.getTitle())
                 .ridingTime(dto.getRidingTime())
-                .participantCount(1)
+                .maxParticipantCount(dto.getMaxParticipantCnt())
                 .departure(dto.getDeparture())
                 .destination(dto.getDestination())
                 .matchingGender(dto.getMatchingGender())
@@ -69,37 +66,37 @@ public class MatchingService {
                 .build();
     }
 
-    public JoinMatchingResponseDto joinMatching(Long matchingIdx, Long memberIdx) {
-        Matching matching = matchingRepository.findByIdx(matchingIdx)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
-        Member member = memberRepository.findByIdx(memberIdx)
-                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-        if (matching.getParticipantCount() == MAX_PARTICIPANT_COUNT) {
-            throw new ErrorHandler(ErrorStatus.MATCHING_PARTICIPANT_FULL);
-        }
-
-        MemberMatching memberMatching = MemberMatching.builder()
-                .member(member)
-                .matching(matching)
-                .build();
-        memberMatchingRepository.save(memberMatching);
-
-//        member.getMemberMatching().add(memberMatching);
-//        matching.getMemberMatching().add(memberMatching);
-
-        matching.plusParticipantCount();
-
-        return JoinMatchingResponseDto.builder()
-                .matchingIdx(matching.getIdx())
-                .memberIdx(member.getIdx())
-                .memberNickName(member.getNickName())
-                .hostMemberIdx(matching.getHostMemberIdx())
-                .hostMemberNickName(matching.getHostMemberNickName())
-                .memberMatchingIdx(memberMatching.getIdx())
-                .title(matching.getTitle())
-                .isSuccess(true)
-                .build();
-    }
+//    public JoinMatchingResponseDto joinMatching(Long matchingIdx, Long memberIdx) {
+//        Matching matching = matchingRepository.findByIdx(matchingIdx)
+//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
+//        Member member = memberRepository.findByIdx(memberIdx)
+//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+//        if (matching.getParticipantCount() == MAX_PARTICIPANT_COUNT) {
+//            throw new ErrorHandler(ErrorStatus.MATCHING_PARTICIPANT_FULL);
+//        }
+//
+//        MemberMatching memberMatching = MemberMatching.builder()
+//                .member(member)
+//                .matching(matching)
+//                .build();
+//        memberMatchingRepository.save(memberMatching);
+//
+////        member.getMemberMatching().add(memberMatching);
+////        matching.getMemberMatching().add(memberMatching);
+//
+//        matching.plusParticipantCount();
+//
+//        return JoinMatchingResponseDto.builder()
+//                .matchingIdx(matching.getIdx())
+//                .memberIdx(member.getIdx())
+//                .memberNickName(member.getNickName())
+//                .hostMemberIdx(matching.getHostMemberIdx())
+//                .hostMemberNickName(matching.getHostMemberNickName())
+//                .memberMatchingIdx(memberMatching.getIdx())
+//                .title(matching.getTitle())
+//                .isSuccess(true)
+//                .build();
+//    }
 
     public MatchingInfoResponseDto getMatchingInfo(Long matchingIdx) {
         Matching matching = matchingRepository.findByIdx(matchingIdx)
@@ -112,7 +109,7 @@ public class MatchingService {
                 .hostMemberIdx(matching.getHostMemberIdx())
                 .title(matching.getTitle())
                 .ridingTime(matching.getRidingTime())
-                .participantCount(matching.getParticipantCount() + "")
+                .maxParticipantCnt(matching.getMaxParticipantCount() + "")
                 .departure(matching.getDeparture())
                 .destination(matching.getDestination())
                 .matchingStatus(matching.getMatchingStatus().name())

@@ -18,6 +18,7 @@ public class MatchingDto {
         private String ridingTime;
         private String departure;
         private String destination;
+        private Integer maxParticipantCnt;
         private Gender matchingGender;
         private List<PayType> payTypes;
         private LocalDate expiredAt;

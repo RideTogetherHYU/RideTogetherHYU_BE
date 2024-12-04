@@ -1,13 +1,7 @@
 package com.ridetogether.server.domain.chatroom.dao;
 
-import com.ridetogether.server.domain.chat.application.RedisSubscriber;
-import com.ridetogether.server.domain.chat.domain.ChatMessage;
-import com.ridetogether.server.domain.chat.model.ChatStatus;
-import com.ridetogether.server.domain.chatroom.converter.ChatRoomDtoConverter;
 import com.ridetogether.server.domain.chatroom.domain.ChatRoom;
-import com.ridetogether.server.domain.chatroom.dto.ChatRoomResponseDto;
 import com.ridetogether.server.domain.matching.dao.MatchingRepository;
-import com.ridetogether.server.domain.matching.domain.Matching;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
 import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
 import jakarta.annotation.PostConstruct;
@@ -20,9 +14,7 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j

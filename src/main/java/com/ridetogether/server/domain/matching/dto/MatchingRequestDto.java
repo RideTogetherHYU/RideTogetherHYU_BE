@@ -1,7 +1,5 @@
 package com.ridetogether.server.domain.matching.dto;
 
-import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
-import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,6 +16,7 @@ public class MatchingRequestDto {
         private String departure;
         private String destination;
         private String matchingGender;
+        private Integer maxParticipantCnt;
         private List<String> payTypes;
         private String expiredAt;
     }

@@ -38,7 +38,7 @@ public class MatchingResponseDto {
         private Long hostMemberIdx;
         private String title;
         private String ridingTime;
-        private String participantCount;
+        private String maxParticipantCnt;
         private String departure;
         private String destination;
         private String matchingStatus;
