@@ -31,8 +31,6 @@ public class MatchingService {
     private final MemberMatchingRepository memberMatchingRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    private static final int MAX_PARTICIPANT_COUNT = 4;
-
     public CreateMatchingResponseDto createMatching(CreateMatchingDto dto) {
         Member member = memberRepository.findByIdx(dto.getHostMemberIdx())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -144,5 +142,10 @@ public class MatchingService {
         if (price < 0) throw new ErrorHandler(ErrorStatus.PRICE_INVALIDATE);
         matching.updatePrice(price);
         return "success";
+    }
+
+    public Matching findByIdx(Long matchingIdx) {
+        return matchingRepository.findByIdx(matchingIdx)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
     }
 }

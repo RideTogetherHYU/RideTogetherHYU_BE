@@ -2,13 +2,13 @@ package com.ridetogether.server.global.config;
 
 import com.ridetogether.server.domain.chat.application.RedisSubscriber;
 import com.ridetogether.server.domain.chat.dto.ChatMessageDto;
+import com.ridetogether.server.domain.realtimematch.domain.RealTimeMatch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
@@ -69,6 +69,19 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(connectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(ChatMessageDto.class)); // ChatDto 클래스를 직렬화
+        return redisTemplate;
+    }
+
+    /*
+    매칭 데이터를 저장할 때 사용할 RedisTemplate 설정
+    키는 문자열로 직렬화, 값은 RealTimeMatchDto 객체를 Json 형식으로 직렬화
+    * */
+    @Bean
+    public RedisTemplate<String, RealTimeMatch> redisTemplateForMatchDto(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, RealTimeMatch> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(RealTimeMatch.class));
         return redisTemplate;
     }
 

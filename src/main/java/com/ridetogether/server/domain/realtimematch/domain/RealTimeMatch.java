@@ -1,19 +1,17 @@
 package com.ridetogether.server.domain.realtimematch.domain;
 
-import com.ridetogether.server.domain.matching.domain.Matching;
-import com.ridetogether.server.global.common.BaseTimeEntity;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import java.time.LocalDate;
+import com.ridetogether.server.domain.matching.model.MatchingStatus;
+import lombok.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 // Redis에 저장될 데이터 구조 -> 빌더형태로
 // Redis 사용방법 (repo, template 조사 후 고민)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Builder
 public class RealTimeMatch {
 
     /*
@@ -34,10 +32,22 @@ public class RealTimeMatch {
 
     private Long matchingIdx;
 
+    private Set<Long> restParticipantsId = new HashSet<>();
+
     private int nowParticipantCnt;
 
     private int maxParticipantCnt; // Matching에서 가져와서 저장 해두기
 
-    private LocalDate expiredAt;
+    private MatchingStatus matchingStatus;
+
+    private LocalDateTime expiredAt;
+
+    public void plusParticipantCount() {
+        this.nowParticipantCnt++;
+    }
+
+    public void minusParticipantCount() {
+        this.nowParticipantCnt--;
+    }
 
 }

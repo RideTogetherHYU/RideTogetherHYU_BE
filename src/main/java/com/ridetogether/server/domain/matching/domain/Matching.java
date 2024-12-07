@@ -38,7 +38,7 @@ public class Matching extends BaseTimeEntity implements Serializable {
 
     private String ridingTime;
 
-//    private int participantCount;
+    private int participantCount;
 
     private int maxParticipantCount;
 
@@ -80,12 +80,12 @@ public class Matching extends BaseTimeEntity implements Serializable {
         this.price = price;
     }
 
-//    public void plusParticipantCount() {
-//        this.participantCount++;
-//    }
-//
-//    public void minusParticipantCount() {
-//        this.participantCount--;
-//    }
+    public void plusParticipantCount() {
+        this.participantCount++;
+    }
+
+    public void minusParticipantCount() {
+        this.participantCount--;
+    }
 
 }
