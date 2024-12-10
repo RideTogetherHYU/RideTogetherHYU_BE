@@ -15,7 +15,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 
-import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchDto.*;
+import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchRequestDto.*;
+import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto.*;
 
 @Service
 @RequiredArgsConstructor
@@ -44,42 +45,42 @@ public class RealTimeMatchService {
     }
 
     // 매칭 생성
-    public void createMatch(Long realTimeMatchId, Long matchingId, int maxParticipantCnt, LocalDateTime expiredAt) {
-
+    public void createMatch(CreateRealTimeMatchRequestDto requestDto) {
+        Long realTimeMatchId = generateRealTimeMatchId();
         RealTimeMatch matchDto = RealTimeMatch.builder()
                 .idx(realTimeMatchId)
-                .matchingIdx(matchingId)
+                .matchingIdx(requestDto.getMatchingId())
                 .restParticipantsId(new HashSet<>())
                 .nowParticipantCnt(1)
-                .maxParticipantCnt(maxParticipantCnt)
+                .maxParticipantCnt(requestDto.getMaxParticipantCnt())
                 .matchingStatus(MatchingStatus.WAITING)
-                .expiredAt(expiredAt)
+                .expiredAt(requestDto.getExpiredAt())
                 .build()
         ;
 
         String key = MATCH_PREFIX + realTimeMatchId;
-        redisTemplate.opsForValue().set(key, matchDto, Duration.between(LocalDateTime.now(), expiredAt));
+        redisTemplate.opsForValue().set(key, matchDto, Duration.between(LocalDateTime.now(), requestDto.getExpiredAt()));
     }
 
     // 매칭삭제
-    public void deleteMatch(Long realTimeMatchId, Long participantId) {
-        RealTimeMatch match = findRealTimeMatchById(realTimeMatchId);
+    public void deleteMatch(DeleteRealTimeMatchRequest requestDto) {
+        RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
         Matching matching = matchingService.findByIdx(match.getMatchingIdx());
 
         // 방장만 삭제 가능
-        if (!matching.getHostMemberIdx().equals(participantId)) {
+        if (!matching.getHostMemberIdx().equals(requestDto.getParticipantId())) {
             throw new ErrorHandler(ErrorStatus.MATCHING_NOT_HOST);
         }
 
-        redisTemplate.delete(MATCH_PREFIX + realTimeMatchId);
+        redisTemplate.delete(MATCH_PREFIX + requestDto.getRealTimeMatchId());
     }
 
     // 매칭 정보 가져오기
-    public RealTimeMatchInfoDto getRealTimeMatchInfo(Long realTimeMatchId) {
-        RealTimeMatch match = findRealTimeMatchById(realTimeMatchId);
+    public RealTimeMatchInfoResponseDto getRealTimeMatchInfo(RealTimeMatchInfoRequest requestDto) {
+        RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
         Long hostMemberIdx = matchingService.findByIdx(match.getMatchingIdx()).getHostMemberIdx();
 
-        return RealTimeMatchInfoDto.builder()
+        return RealTimeMatchInfoResponseDto.builder()
                 .realTimeMatchId(match.getIdx())
                 .hostId(hostMemberIdx)
                 .restMemberIds(match.getRestParticipantsId())
@@ -92,36 +93,50 @@ public class RealTimeMatchService {
     }
 
     // 매칭 참여
-    public void enterMatching(Long realTimeMatchId, Long participantId) {
-        RealTimeMatch match = findRealTimeMatchById(realTimeMatchId);
+    public void enterMatching(EnterAndLeaveMatchRequest requestDto) {
+        RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
+
+        if (match.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_START);
+        }
+
+        if (match.getMatchingStatus().equals(MatchingStatus.FINISH)) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_FINISH);
+        }
 
         if (match.getNowParticipantCnt() >= match.getMaxParticipantCnt()) {
             throw new ErrorHandler(ErrorStatus.MATCHING_PARTICIPANT_FULL);
         }
 
-        if (match.getRestParticipantsId().contains(participantId)) {
+        if (match.getRestParticipantsId().contains(requestDto.getParticipantId())) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_PARTICIPANT);
         }
 
-        addParticipant(match, participantId);
-        redisTemplate.opsForValue().set(MATCH_PREFIX + realTimeMatchId, match);
+        addParticipant(match, requestDto.getParticipantId());
+        redisTemplate.opsForValue().set(MATCH_PREFIX + requestDto.getRealTimeMatchId(), match);
     }
 
     // 매칭 나가기 (방장 제외)
-    public void leaveMatching(Long realTimeMatchId, Long participantId) {
-        RealTimeMatch match = findRealTimeMatchById(realTimeMatchId);
+    public void leaveMatching(EnterAndLeaveMatchRequest requestDto) {
+        RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
         Matching matching = matchingService.findByIdx(match.getMatchingIdx());
 
-        if (matching.getHostMemberIdx().equals(participantId)) {
-            // 매칭을 삭제하시겠습니까 ? 경고문 띄울 수 있게 향후 작업
-            redisTemplate.delete(MATCH_PREFIX + realTimeMatchId);
+        if (match.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_START);
         }
-        if (!match.getRestParticipantsId().contains(participantId)) {
+        if (match.getMatchingStatus().equals(MatchingStatus.FINISH)) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_FINISH);
+        }
+        if (matching.getHostMemberIdx().equals(requestDto.getParticipantId())) {
+            // 매칭을 삭제하시겠습니까 ? 경고문 띄울 수 있게 향후 작업
+            redisTemplate.delete(MATCH_PREFIX + requestDto.getRealTimeMatchId());
+        }
+        if (!match.getRestParticipantsId().contains(requestDto.getParticipantId())) {
             throw new ErrorHandler(ErrorStatus.MATCHING_NOT_PARTICIPANT);
         }
 
-        removeParticipant(match, participantId);
-        redisTemplate.opsForValue().set(MATCH_PREFIX + realTimeMatchId, match);
+        removeParticipant(match, requestDto.getParticipantId());
+        redisTemplate.opsForValue().set(MATCH_PREFIX + requestDto.getRealTimeMatchId(), match);
     }
 
 

@@ -7,11 +7,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-public class RealTimeMatchDto {
+public class RealTimeMatchResponseDto {
 
     @Data
     @Builder
-    public static class RealTimeMatchInfoDto {
+    public static class RealTimeMatchInfoResponseDto {
         private Long realTimeMatchId;
         private Long hostId;
         private Set<Long> restMemberIds;
