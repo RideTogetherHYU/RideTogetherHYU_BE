@@ -1,5 +1,6 @@
 package com.ridetogether.server.domain.realtimematch.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -24,6 +25,7 @@ public class RealTimeMatchRequestDto {
 
     @Data
     @Builder
+    @AllArgsConstructor
     public static class RealTimeMatchInfoRequest {
         private Long realTimeMatchId;
     }
