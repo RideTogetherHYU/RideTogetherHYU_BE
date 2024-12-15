@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
@@ -39,11 +40,16 @@ public class RedisConfig {
 
     @Bean
     public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory connectionFactory
+            RedisConnectionFactory connectionFactory,
+            MessageListenerAdapter listenerAdapterForMatch
     ) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         // RedisMessageListenerContainer 에 사용할 Redis 연결 팩토리(RedisConnectionFactory)를 설정
         container.setConnectionFactory(connectionFactory);
+
+        // match에 대한 리스너 추가
+        container.addMessageListener(listenerAdapterForMatch, new ChannelTopic("realtime-match"));
+
         return container;
     }
 

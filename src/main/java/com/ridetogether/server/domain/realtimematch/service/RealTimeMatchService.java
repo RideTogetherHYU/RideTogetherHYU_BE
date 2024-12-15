@@ -6,14 +6,17 @@ import com.ridetogether.server.domain.matching.model.MatchingStatus;
 import com.ridetogether.server.domain.realtimematch.domain.RealTimeMatch;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
 import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.*;
 
 import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchRequestDto.*;
 import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto.*;
@@ -26,7 +29,9 @@ public class RealTimeMatchService {
     private static final String ID_COUNTER = "match:id:counter";
     private final static String MATCH_PREFIX = "realtimeMatch:";
 
-    private final RedisTemplate<String, RealTimeMatch> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private Map<String, ChannelTopic> topics;
+
     private final MatchingService matchingService;
 
 
@@ -38,6 +43,11 @@ public class RealTimeMatchService {
     4. 인원 추가
     5. 인원 제거
     * */
+
+    @PostConstruct
+    private void init() {
+        topics = new HashMap<>();
+    }
 
     // PK 발급
     public Long generateRealTimeMatchId() {
@@ -112,8 +122,18 @@ public class RealTimeMatchService {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_PARTICIPANT);
         }
 
+        // Topic 가져오기
+        ChannelTopic topic = topics.computeIfAbsent(match.getIdx() + "", id -> {
+            log.info("등록된 topic이 없습니다. 새로운 topic을 생성합니다. realTimeMatchId : {}", id);
+            return new ChannelTopic(id);
+        });
+
+        // 참여자 추가
         addParticipant(match, requestDto.getParticipantId());
-        redisTemplate.opsForValue().set(MATCH_PREFIX + requestDto.getRealTimeMatchId(), match);
+
+        // Redis에 덮어쓰기 (업데이트)
+        String key = MATCH_PREFIX + requestDto.getRealTimeMatchId();
+        redisTemplate.opsForValue().set(key, match);
     }
 
     // 매칭 나가기 (방장 제외)
@@ -127,21 +147,34 @@ public class RealTimeMatchService {
         if (match.getMatchingStatus().equals(MatchingStatus.FINISH)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_FINISH);
         }
+
+        // 방장이 나가면 매칭 삭제
         if (matching.getHostMemberIdx().equals(requestDto.getParticipantId())) {
-            // 매칭을 삭제하시겠습니까 ? 경고문 띄울 수 있게 향후 작업
             redisTemplate.delete(MATCH_PREFIX + requestDto.getRealTimeMatchId());
+            return;
         }
+
         if (!match.getRestParticipantsId().contains(requestDto.getParticipantId())) {
             throw new ErrorHandler(ErrorStatus.MATCHING_NOT_PARTICIPANT);
         }
 
+        // 참여자 제거
         removeParticipant(match, requestDto.getParticipantId());
-        redisTemplate.opsForValue().set(MATCH_PREFIX + requestDto.getRealTimeMatchId(), match);
+
+        // Redis에 덮어쓰기 (업데이트)
+        String key = MATCH_PREFIX + requestDto.getRealTimeMatchId();
+        redisTemplate.opsForValue().set(key, match);
     }
 
 
+    public Set<Long> getParticipantsId(RealTimeMatchInfoRequest request) {
+        RealTimeMatchInfoResponseDto info = getRealTimeMatchInfo(request);
+        return info.getRestMemberIds();
+    }
+
     private RealTimeMatch findRealTimeMatchById(Long realTimeMatchId) {
-        return redisTemplate.opsForValue().get(MATCH_PREFIX + realTimeMatchId);
+        String key = MATCH_PREFIX + realTimeMatchId;
+        return (RealTimeMatch) redisTemplate.opsForValue().get(key);
     }
 
     private void addParticipant(RealTimeMatch match, Long participantId) {

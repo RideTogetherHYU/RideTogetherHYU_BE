@@ -12,7 +12,7 @@ import java.util.Set;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Builder
-public class RealTimeMatch {
+public class RealTimeMatch { // 매칭 대기상태일 때 멤버가 비확정적일 때 사용 -> DB연동 X
 
     /*
     * 매칭에 신청, 취소한 사람 관리

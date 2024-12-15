@@ -147,6 +147,10 @@ public class MemberService {
 		return memberRepository.findByMemberId(memberId).orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 	}
 
+	public Member findByIdx(Long idx) {
+		return memberRepository.findByIdx(idx).orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+	}
+
 	public boolean isExistByEmail(String email) {
 		return memberRepository.existsByEmail(email);
 	}

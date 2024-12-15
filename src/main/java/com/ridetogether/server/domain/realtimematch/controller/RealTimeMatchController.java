@@ -19,6 +19,10 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchRequestDto.*;
 import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto.*;
 
@@ -67,11 +71,23 @@ public class RealTimeMatchController {
         RealTimeMatchInfoResponseDto realTimeMatchInfo = realTimeMatchService.getRealTimeMatchInfo(new RealTimeMatchInfoRequest(realTimeMatchId));
         log.info("{} 님이 매칭에서 나갔습니다. 실시간 매칭아이디 = {} ", loginMember.getNickName(), realTimeMatchId);
 
-        // 경로를 같게해야할지 다르게 해야할지 ...
+        // 경로를 같게해야할지 다르게 해야할지 ...-> 같게하자
         messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId, realTimeMatchInfo);
     }
 
+    @MessageMapping("/match/{matchId}/info")
+    public void getRealTimeMatchInfo(@DestinationVariable Long realTimeMatchId) {
+        RealTimeMatchInfoResponseDto info = realTimeMatchService.getRealTimeMatchInfo(new RealTimeMatchInfoRequest(realTimeMatchId));
+        messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId, info);
+    }
 
-
-
+    @MessageMapping("/match/{matchId}/participants")
+    public void getMatchParticipants(@DestinationVariable Long realTimeMatchId) {
+        Set<Long> participantsId = realTimeMatchService.getParticipantsId(new RealTimeMatchInfoRequest(realTimeMatchId));
+        List<Member> participants = new ArrayList<>();
+        for (Long id : participantsId) {
+            participants.add(memberService.findByIdx(id));
+        }
+        messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId + "/participants", participants);
+    }
 }
