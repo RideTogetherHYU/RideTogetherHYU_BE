@@ -40,7 +40,7 @@ public class ChatRoomController {
     public ApiResponse<CreateChatRoomResponseDto> createRoom(@PathVariable(value = "matchingIdx") Long matchingIdx) {
         String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus._UNAUTHORIZED));
         Member member = memberService.findByMemberId(memberId);
-        return ApiResponse.onSuccess(chatRoomService.createChatRoom(matchingIdx, member.getIdx()));
+        return ApiResponse.onSuccess(chatRoomService.    createChatRoom(matchingIdx, member.getIdx()));
     }
 
 //    @ApiOperation(value = "방 정보 보기", notes = "방 정보")

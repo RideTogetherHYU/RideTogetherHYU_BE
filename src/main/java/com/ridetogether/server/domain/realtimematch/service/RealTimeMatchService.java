@@ -2,7 +2,11 @@ package com.ridetogether.server.domain.realtimematch.service;
 
 import com.ridetogether.server.domain.matching.application.MatchingService;
 import com.ridetogether.server.domain.matching.domain.Matching;
+import com.ridetogether.server.domain.matching.dto.MatchingResponseDto;
 import com.ridetogether.server.domain.matching.model.MatchingStatus;
+import com.ridetogether.server.domain.member.application.MemberService;
+import com.ridetogether.server.domain.member.dao.MemberRepository;
+import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.domain.realtimematch.domain.RealTimeMatch;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
 import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
@@ -18,6 +22,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.ridetogether.server.domain.matching.dto.MatchingResponseDto.*;
 import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchRequestDto.*;
 import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto.*;
 
@@ -33,6 +38,8 @@ public class RealTimeMatchService {
     private Map<String, ChannelTopic> topics;
 
     private final MatchingService matchingService;
+
+    private final MemberRepository memberRepository;
 
 
     /*
@@ -105,6 +112,13 @@ public class RealTimeMatchService {
     // 매칭 참여
     public void enterMatching(EnterAndLeaveMatchRequest requestDto) {
         RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
+        Matching matching = matchingService.findByIdx(match.getMatchingIdx());
+        Member member = memberRepository.findByIdx(requestDto.getParticipantId())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        if (!member.getGender().equals(matching.getMatchingGender())) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_CANNOT_PARTICIPATE);
+        }
 
         if (match.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_START);

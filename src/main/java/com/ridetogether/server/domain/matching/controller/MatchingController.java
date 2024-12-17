@@ -35,6 +35,18 @@ public class MatchingController {
 //        return ApiResponse.onSuccess(matchingService.joinMatching(matchingIdx, loginMember.getIdx()));
 //    }
 
+    @DeleteMapping
+    public ApiResponse<?> deleteMatching(@RequestParam(value = "matchingIdx") Long matchingIdx) {
+        String memberId = SecurityUtil.getLoginMemberId().orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
+        Member member = memberService.findByMemberId(memberId);
+        DeleteMatchingRequestDto dto = DeleteMatchingRequestDto.builder()
+                .matchingIdx(matchingIdx)
+                .hostMemberIdx(member.getIdx())
+                .build();
+
+        return ApiResponse.onSuccess(matchingService.deleteMatching(dto));
+    }
+
     @GetMapping
     public ApiResponse<?> getMatchingInfo(@RequestParam(value = "matchingIdx") Long matchingIdx) {
         return ApiResponse.onSuccess(matchingService.getMatchingInfo(matchingIdx));

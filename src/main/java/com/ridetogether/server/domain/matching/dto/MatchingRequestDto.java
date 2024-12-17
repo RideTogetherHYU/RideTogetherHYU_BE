@@ -23,6 +23,13 @@ public class MatchingRequestDto {
 
     @Builder
     @Data
+    public static class DeleteMatchingRequestDto {
+        private Long matchingIdx;
+        private Long hostMemberIdx;
+    }
+
+    @Builder
+    @Data
     public static class UpdatePriceRequestDto {
         private int price;
     }

@@ -7,6 +7,7 @@ import com.ridetogether.server.domain.matching.dao.MemberMatchingRepository;
 import com.ridetogether.server.domain.matching.domain.Matching;
 import com.ridetogether.server.domain.matching.domain.MemberMatching;
 import com.ridetogether.server.domain.matching.dto.MatchingDto.CreateMatchingDto;
+import com.ridetogether.server.domain.matching.dto.MatchingRequestDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.CreateMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.JoinMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.MatchingInfoResponseDto;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.ridetogether.server.domain.matching.dto.MatchingRequestDto.*;
 
 @Service
 @Transactional
@@ -62,6 +65,25 @@ public class MatchingService {
                 .title(matching.getTitle())
                 .isSuccess(true)
                 .build();
+    }
+
+    public String deleteMatching(DeleteMatchingRequestDto dto) {
+        Member member = memberRepository.findByIdx(dto.getHostMemberIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+        Matching matching = matchingRepository.findByIdx(dto.getMatchingIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
+
+        if (!dto.getHostMemberIdx().equals(matching.getHostMemberIdx())) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_NOT_HOST);
+        }
+
+        MemberMatching memberMatching = memberMatchingRepository.findByMatching(matching)
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
+
+        memberMatchingRepository.delete(memberMatching);
+        matchingRepository.delete(matching);
+        return "success"
     }
 
 //    public JoinMatchingResponseDto joinMatching(Long matchingIdx, Long memberIdx) {
@@ -122,17 +144,6 @@ public class MatchingService {
                 .build();
     }
 
-    public String cancelJoinMatching(Long matchingIdx, Long memberIdx) {
-//        Matching matching = matchingRepository.findByIdx(matchingIdx)
-//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
-//        Member member = memberRepository.findByIdx(memberIdx)
-//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
-//        MemberMatching memberMatching = memberMatchingRepository.findByMemberAndMatching(member, matching)
-//                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_MATCHING_NOT_FOUND));
-//        memberMatchingRepository.delete(memberMatching);
-//        matching.minusParticipantCount();
-        return "success";
-    }
 
     // 반환타입 이렇게 해도 되나
     public String enterTaxiPrice(Long matchingIdx, int price) {
