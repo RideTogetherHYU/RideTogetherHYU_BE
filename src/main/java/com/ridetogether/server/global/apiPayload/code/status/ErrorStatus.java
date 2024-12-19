@@ -53,6 +53,7 @@ public enum ErrorStatus implements BaseErrorCode {
     PRICE_INVALIDATE(HttpStatus.BAD_REQUEST, "MATCH4007", "정확한 금액을 입력해주세요."),
     MATCHING_NOT_HOST(HttpStatus.FORBIDDEN, "MATCH4008", "방장만 매칭을 삭제할 수 있습니다."),
     MATCHING_CANNOT_PARTICIPATE(HttpStatus.BAD_REQUEST, "MATCH4009", "매칭에 참여할 수 없습니다"),
+    MATCHING_EXPIRED(HttpStatus.BAD_REQUEST, "MATCH4010", "매칭이 만료되었습니다."),
 
     // 신고 응답
     REPORT_NOT_FOUND(HttpStatus.BAD_REQUEST, "REPORT4001", "신고내역이 존재하지 않습니다."),

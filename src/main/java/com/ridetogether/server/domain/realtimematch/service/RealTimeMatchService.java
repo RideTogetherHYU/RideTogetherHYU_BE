@@ -7,7 +7,10 @@ import com.ridetogether.server.domain.matching.model.MatchingStatus;
 import com.ridetogether.server.domain.member.application.MemberService;
 import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
+import com.ridetogether.server.domain.realtimematch.converter.RealTimeMatchReqConverter;
 import com.ridetogether.server.domain.realtimematch.domain.RealTimeMatch;
+import com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto;
+import com.ridetogether.server.domain.realtimematch.model.RealTimeMatchStatus;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
 import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
 import jakarta.annotation.PostConstruct;
@@ -62,21 +65,25 @@ public class RealTimeMatchService {
     }
 
     // 매칭 생성
-    public void createMatch(CreateRealTimeMatchRequestDto requestDto) {
+    public RealTimeMatch createMatch(CreateRealTimeMatchRequestDto requestDto) {
         Long realTimeMatchId = generateRealTimeMatchId();
+
+        checkExpired(requestDto.getExpiredAt());
+
         RealTimeMatch matchDto = RealTimeMatch.builder()
                 .idx(realTimeMatchId)
                 .matchingIdx(requestDto.getMatchingId())
                 .restParticipantsId(new HashSet<>())
                 .nowParticipantCnt(1)
                 .maxParticipantCnt(requestDto.getMaxParticipantCnt())
-                .matchingStatus(MatchingStatus.WAITING)
+                .realTimeMatchStatus(RealTimeMatchStatus.WAIT)
                 .expiredAt(requestDto.getExpiredAt())
                 .build()
         ;
 
         String key = MATCH_PREFIX + realTimeMatchId;
         redisTemplate.opsForValue().set(key, matchDto, Duration.between(LocalDateTime.now(), requestDto.getExpiredAt()));
+        return matchDto;
     }
 
     // 매칭삭제
@@ -101,9 +108,9 @@ public class RealTimeMatchService {
                 .realTimeMatchId(match.getIdx())
                 .hostId(hostMemberIdx)
                 .restMemberIds(match.getRestParticipantsId())
-                .restParticipantsCnt(match.getNowParticipantCnt())
+                .nowParticipantsCnt(match.getNowParticipantCnt())
                 .maxParticipantsCnt(match.getMaxParticipantCnt())
-                .matchingStatus(match.getMatchingStatus())
+                .realTimeMatchStatus(match.getRealTimeMatchStatus())
                 .expired(match.getExpiredAt())
                 .build()
         ;
@@ -120,11 +127,11 @@ public class RealTimeMatchService {
             throw new ErrorHandler(ErrorStatus.MATCHING_CANNOT_PARTICIPATE);
         }
 
-        if (match.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
+        if (matching.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_START);
         }
 
-        if (match.getMatchingStatus().equals(MatchingStatus.FINISH)) {
+        if (matching.getMatchingStatus().equals(MatchingStatus.FINISH)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_FINISH);
         }
 
@@ -148,6 +155,9 @@ public class RealTimeMatchService {
         // Redis에 덮어쓰기 (업데이트)
         String key = MATCH_PREFIX + requestDto.getRealTimeMatchId();
         redisTemplate.opsForValue().set(key, match);
+
+        // 참여자가 다 차면 상태 변경
+//        completeMatching(new RealTimeMatchInfoRequest(match.getIdx()));
     }
 
     // 매칭 나가기 (방장 제외)
@@ -155,10 +165,10 @@ public class RealTimeMatchService {
         RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
         Matching matching = matchingService.findByIdx(match.getMatchingIdx());
 
-        if (match.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
+        if (matching.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_START);
         }
-        if (match.getMatchingStatus().equals(MatchingStatus.FINISH)) {
+        if (matching.getMatchingStatus().equals(MatchingStatus.FINISH)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_FINISH);
         }
 
@@ -180,6 +190,25 @@ public class RealTimeMatchService {
         redisTemplate.opsForValue().set(key, match);
     }
 
+    /*
+    * 시작버튼 누르면 db로 정보 다 보내주기 -> 그 역할 하는 메소드
+    * */
+    public RealTimeMatchInfoResponseDto completeMatching(RealTimeMatchInfoRequest request) {
+        Long realTimeMatchId = request.getRealTimeMatchId();
+        RealTimeMatch realTimeMatch = findRealTimeMatchById(realTimeMatchId);
+        Long hostMemberIdx = matchingService.findByIdx(realTimeMatch.getMatchingIdx()).getHostMemberIdx();
+
+        realTimeMatch.updateStatusToReady();
+        return RealTimeMatchInfoResponseDto.builder()
+                .realTimeMatchId(realTimeMatchId)
+                .hostId(hostMemberIdx)
+                .restMemberIds(realTimeMatch.getRestParticipantsId())
+                .nowParticipantsCnt(realTimeMatch.getNowParticipantCnt())
+                .maxParticipantsCnt(realTimeMatch.getMaxParticipantCnt())
+                .realTimeMatchStatus(realTimeMatch.getRealTimeMatchStatus())
+                .expired(realTimeMatch.getExpiredAt())
+                .build();
+    }
 
     public Set<Long> getParticipantsId(RealTimeMatchInfoRequest request) {
         RealTimeMatchInfoResponseDto info = getRealTimeMatchInfo(request);
@@ -199,6 +228,12 @@ public class RealTimeMatchService {
     private void removeParticipant(RealTimeMatch match, Long participantId) {
         match.getRestParticipantsId().remove(participantId);
         match.minusParticipantCount();
+    }
+
+    private void checkExpired(LocalDateTime expiredAt) {
+        if (LocalDateTime.now().isAfter(expiredAt)) {
+            throw new ErrorHandler(ErrorStatus.MATCHING_EXPIRED);
+        }
     }
 
 }

@@ -63,6 +63,8 @@ public class Matching extends BaseTimeEntity implements Serializable {
 
     private int price;
 
+    private Long realTimeMatchId;
+
     @OneToMany(mappedBy = "matching")
     @JsonIgnore
     @Builder.Default
@@ -78,6 +80,10 @@ public class Matching extends BaseTimeEntity implements Serializable {
     }
     public void updatePrice(int price) {
         this.price = price;
+    }
+
+    public void updateRealTimeMatchId(Long realTimeMatchId) {
+        this.realTimeMatchId = realTimeMatchId;
     }
 
 }

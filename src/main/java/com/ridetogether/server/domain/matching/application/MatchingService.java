@@ -11,6 +11,7 @@ import com.ridetogether.server.domain.matching.dto.MatchingRequestDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.CreateMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.JoinMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.MatchingInfoResponseDto;
+import com.ridetogether.server.domain.matching.model.MatchingStatus;
 import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.domain.member.model.PayType;
@@ -45,6 +46,7 @@ public class MatchingService {
                 .maxParticipantCount(dto.getMaxParticipantCnt())
                 .departure(dto.getDeparture())
                 .destination(dto.getDestination())
+                .matchingStatus(MatchingStatus.WAITING)
                 .matchingGender(dto.getMatchingGender())
                 .payTypes(dto.getPayTypes())
                 .build();
@@ -83,7 +85,7 @@ public class MatchingService {
 
         memberMatchingRepository.delete(memberMatching);
         matchingRepository.delete(matching);
-        return "success"
+        return "success";
     }
 
 //    public JoinMatchingResponseDto joinMatching(Long matchingIdx, Long memberIdx) {
@@ -117,6 +119,7 @@ public class MatchingService {
 //                .isSuccess(true)
 //                .build();
 //    }
+
 
     public MatchingInfoResponseDto getMatchingInfo(Long matchingIdx) {
         Matching matching = matchingRepository.findByIdx(matchingIdx)
@@ -153,6 +156,11 @@ public class MatchingService {
         if (price < 0) throw new ErrorHandler(ErrorStatus.PRICE_INVALIDATE);
         matching.updatePrice(price);
         return "success";
+    }
+
+    public void updateRealTimeMatchId(Long matchingIdx, Long realTimeMatchingId) {
+        Matching matching = findByIdx(matchingIdx);
+        matching.updateRealTimeMatchId(realTimeMatchingId);
     }
 
     public Matching findByIdx(Long matchingIdx) {

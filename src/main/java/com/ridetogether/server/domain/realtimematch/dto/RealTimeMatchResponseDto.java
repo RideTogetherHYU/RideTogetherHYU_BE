@@ -1,6 +1,7 @@
 package com.ridetogether.server.domain.realtimematch.dto;
 
 import com.ridetogether.server.domain.matching.model.MatchingStatus;
+import com.ridetogether.server.domain.realtimematch.model.RealTimeMatchStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,9 +16,9 @@ public class RealTimeMatchResponseDto {
         private Long realTimeMatchId;
         private Long hostId;
         private Set<Long> restMemberIds;
-        int restParticipantsCnt;
+        int nowParticipantsCnt;
         int maxParticipantsCnt;
-        MatchingStatus matchingStatus;
+        RealTimeMatchStatus realTimeMatchStatus;
         LocalDateTime expired;
     }
 }

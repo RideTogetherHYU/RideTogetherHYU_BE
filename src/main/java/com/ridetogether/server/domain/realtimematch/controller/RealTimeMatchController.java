@@ -55,6 +55,7 @@ public class RealTimeMatchController {
         log.info("{} 님이 매칭에 참여하였습니다. 실시간 매칭아이디 = {} ", loginMember.getNickName(), realTimeMatchId);
 
         messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId, realTimeMatchInfo);
+        sendMatchStatusNotification(request.getRealTimeMatchId(), loginMember.getNickName() + "님이 매칭에 참여하였습니다.");
     }
 
     @MessageMapping("/match/{matchId}/leave")
@@ -73,6 +74,8 @@ public class RealTimeMatchController {
 
         // 경로를 같게해야할지 다르게 해야할지 ...-> 같게하자
         messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId, realTimeMatchInfo);
+
+        sendMatchStatusNotification(request.getRealTimeMatchId(), loginMember.getNickName() + "님이 매칭에서 나갔습니다.");
     }
 
     @MessageMapping("/match/{matchId}/info")
@@ -89,5 +92,9 @@ public class RealTimeMatchController {
             participants.add(memberService.findByIdx(id));
         }
         messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId + "/participants", participants);
+    }
+
+    private void sendMatchStatusNotification(Long realTimeMatchId, String message) {
+        messagingTemplate.convertAndSend("/topic/realtime-match/" + realTimeMatchId + "/notification", message);
     }
 }

@@ -1,6 +1,7 @@
 package com.ridetogether.server.domain.realtimematch.domain;
 
 import com.ridetogether.server.domain.matching.model.MatchingStatus;
+import com.ridetogether.server.domain.realtimematch.model.RealTimeMatchStatus;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -38,7 +39,7 @@ public class RealTimeMatch { // 매칭 대기상태일 때 멤버가 비확정�
 
     private int maxParticipantCnt; // Matching에서 가져와서 저장 해두기
 
-    private MatchingStatus matchingStatus;
+    private RealTimeMatchStatus realTimeMatchStatus;
 
     private LocalDateTime expiredAt;
 
@@ -48,6 +49,14 @@ public class RealTimeMatch { // 매칭 대기상태일 때 멤버가 비확정�
 
     public void minusParticipantCount() {
         this.nowParticipantCnt--;
+    }
+
+    public void updateStatusToReady() {
+        this.realTimeMatchStatus = RealTimeMatchStatus.READY;
+    }
+
+    public void updateStatusToWait() {
+        this.realTimeMatchStatus = RealTimeMatchStatus.WAIT;
     }
 
 }
