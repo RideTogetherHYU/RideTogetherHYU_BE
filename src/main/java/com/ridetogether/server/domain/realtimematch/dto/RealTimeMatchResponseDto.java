@@ -14,6 +14,7 @@ public class RealTimeMatchResponseDto {
     @Builder
     public static class RealTimeMatchInfoResponseDto {
         private Long realTimeMatchId;
+        private Long matchingIdx;
         private Long hostId;
         private Set<Long> restMemberIds;
         int nowParticipantsCnt;

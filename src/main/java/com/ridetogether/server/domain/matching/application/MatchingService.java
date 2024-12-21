@@ -6,8 +6,10 @@ import com.ridetogether.server.domain.matching.dao.MatchingRepository;
 import com.ridetogether.server.domain.matching.dao.MemberMatchingRepository;
 import com.ridetogether.server.domain.matching.domain.Matching;
 import com.ridetogether.server.domain.matching.domain.MemberMatching;
+import com.ridetogether.server.domain.matching.dto.MatchingDto;
 import com.ridetogether.server.domain.matching.dto.MatchingDto.CreateMatchingDto;
 import com.ridetogether.server.domain.matching.dto.MatchingRequestDto;
+import com.ridetogether.server.domain.matching.dto.MatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.CreateMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.JoinMatchingResponseDto;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto.MatchingInfoResponseDto;
@@ -15,6 +17,9 @@ import com.ridetogether.server.domain.matching.model.MatchingStatus;
 import com.ridetogether.server.domain.member.dao.MemberRepository;
 import com.ridetogether.server.domain.member.domain.Member;
 import com.ridetogether.server.domain.member.model.PayType;
+import com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchRequestDto;
+import com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto;
+import com.ridetogether.server.domain.realtimematch.service.RealTimeMatchService;
 import com.ridetogether.server.global.apiPayload.code.status.ErrorStatus;
 import com.ridetogether.server.global.apiPayload.exception.handler.ErrorHandler;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
+import static com.ridetogether.server.domain.matching.dto.MatchingDto.*;
 import static com.ridetogether.server.domain.matching.dto.MatchingRequestDto.*;
+import static com.ridetogether.server.domain.matching.dto.MatchingResponseDto.*;
+import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchRequestDto.*;
+import static com.ridetogether.server.domain.realtimematch.dto.RealTimeMatchResponseDto.*;
 
 @Service
 @Transactional
@@ -34,6 +45,7 @@ public class MatchingService {
     private final MatchingRepository matchingRepository;
     private final MemberMatchingRepository memberMatchingRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final RealTimeMatchService realTimeMatchService;
 
     public CreateMatchingResponseDto createMatching(CreateMatchingDto dto) {
         Member member = memberRepository.findByIdx(dto.getHostMemberIdx())
@@ -88,6 +100,36 @@ public class MatchingService {
         return "success";
     }
 
+    // 실시간 데이터 저장
+    public StartMatchingResponseDto startMatching(StartMatchingRequestDto dto) {
+        RealTimeMatchInfoResponseDto realTimeInfo = realTimeMatchService.completeMatching(new RealTimeMatchInfoRequest(dto.getRealTimeMatchingIdx()));
+        Matching matching = findByIdx(dto.getMatchingIdx());
+
+        MatchingDto.UpdateMatchingDto updateDto = UpdateMatchingDto.builder()
+                .title(matching.getTitle())
+                .ridingTime(matching.getRidingTime())
+                .participantCount(realTimeInfo.getNowParticipantsCnt())
+                .maxParticipantCount(realTimeInfo.getMaxParticipantsCnt())
+                .departure(matching.getDeparture())
+                .destination(matching.getDestination())
+                .matchingStatus(MatchingStatus.PROGRESS)
+                .build();
+
+        matching.updateMatching(updateDto);
+
+        return StartMatchingResponseDto.builder()
+                .matchingIdx(matching.getIdx())
+                .hostMemberIdx(matching.getHostMemberIdx())
+                .hostMemberNickname(matching.getHostMemberNickName())
+                .ridingTime(matching.getRidingTime())
+                .participantCount(realTimeInfo.getNowParticipantsCnt())
+                .departure(matching.getDeparture())
+                .destination(matching.getDestination())
+                .matchingStatus(MatchingStatus.PROGRESS)
+                .isSuccess(true)
+                .build();
+    }
+
 //    public JoinMatchingResponseDto joinMatching(Long matchingIdx, Long memberIdx) {
 //        Matching matching = matchingRepository.findByIdx(matchingIdx)
 //                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
@@ -121,6 +163,8 @@ public class MatchingService {
 //    }
 
 
+
+    // 매칭 종료 후 추후 데이터 가져올 때 사용
     public MatchingInfoResponseDto getMatchingInfo(Long matchingIdx) {
         Matching matching = matchingRepository.findByIdx(matchingIdx)
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));

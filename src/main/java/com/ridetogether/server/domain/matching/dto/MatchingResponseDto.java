@@ -1,5 +1,6 @@
 package com.ridetogether.server.domain.matching.dto;
 
+import com.ridetogether.server.domain.matching.model.MatchingStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -28,6 +29,20 @@ public class MatchingResponseDto {
         private Long hostMemberIdx;
         private String hostMemberNickName;
         private Long memberMatchingIdx;
+        private Boolean isSuccess;
+    }
+
+    @Builder
+    @Data
+    public static class StartMatchingResponseDto {
+        private Long matchingIdx;
+        private Long hostMemberIdx;
+        private String hostMemberNickname;
+        private String ridingTime;
+        private int participantCount;
+        private String departure;
+        private String destination;
+        private MatchingStatus matchingStatus;
         private Boolean isSuccess;
     }
 

@@ -2,6 +2,7 @@ package com.ridetogether.server.domain.matching.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ridetogether.server.domain.chatroom.domain.ChatRoom;
+import com.ridetogether.server.domain.matching.dto.MatchingDto;
 import com.ridetogether.server.domain.matching.model.MatchingStatus;
 import com.ridetogether.server.domain.member.model.Gender;
 import com.ridetogether.server.domain.member.model.PayType;
@@ -14,6 +15,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.ridetogether.server.domain.matching.dto.MatchingDto.*;
 
 @Entity
 @Getter
@@ -38,7 +41,7 @@ public class Matching extends BaseTimeEntity implements Serializable {
 
     private String ridingTime;
 
-//    private int participantCount;
+    private int participantCount;
 
     private int maxParticipantCount;
 
@@ -84,6 +87,16 @@ public class Matching extends BaseTimeEntity implements Serializable {
 
     public void updateRealTimeMatchId(Long realTimeMatchId) {
         this.realTimeMatchId = realTimeMatchId;
+    }
+
+    public void updateMatching(UpdateMatchingDto dto) {
+        this.title = dto.getTitle();
+        this.ridingTime = dto.getRidingTime();
+        this.participantCount = dto.getParticipantCount();
+        this.maxParticipantCount = dto.getMaxParticipantCount();
+        this.departure = dto.getDeparture();
+        this.destination = dto.getDestination();
+        this.matchingStatus = dto.getMatchingStatus();
     }
 
 }

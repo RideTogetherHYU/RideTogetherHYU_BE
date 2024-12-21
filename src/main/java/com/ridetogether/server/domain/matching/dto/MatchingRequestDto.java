@@ -30,6 +30,13 @@ public class MatchingRequestDto {
 
     @Builder
     @Data
+    public static class StartMatchingRequestDto {
+        private Long matchingIdx;
+        private Long realTimeMatchingIdx;
+    }
+
+    @Builder
+    @Data
     public static class UpdatePriceRequestDto {
         private int price;
     }

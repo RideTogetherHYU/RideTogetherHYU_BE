@@ -75,7 +75,18 @@ public class MatchingController {
         return ApiResponse.onSuccess(matchingService.deleteMatching(dto));
     }
 
-    // 종료 후 가져오는 용도
+    @PatchMapping("/start")
+    public ApiResponse<?> startMatching(@RequestParam(value = "matchingIdx") Long matchingIdx) {
+        Matching matching = matchingService.findByIdx(matchingIdx);
+        StartMatchingRequestDto reqDto = StartMatchingRequestDto.builder()
+                .matchingIdx(matchingIdx)
+                .realTimeMatchingIdx(matching.getRealTimeMatchId())
+                .build();
+
+        return ApiResponse.onSuccess(matchingService.startMatching(reqDto));
+    }
+
+    // 매칭 종료 후 가져오는 용도
     @GetMapping
     public ApiResponse<?> getMatchingInfo(@RequestParam(value = "matchingIdx") Long matchingIdx) {
         return ApiResponse.onSuccess(matchingService.getMatchingInfo(matchingIdx));

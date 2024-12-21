@@ -201,6 +201,7 @@ public class RealTimeMatchService {
         realTimeMatch.updateStatusToReady();
         return RealTimeMatchInfoResponseDto.builder()
                 .realTimeMatchId(realTimeMatchId)
+                .matchingIdx(realTimeMatch.getMatchingIdx())
                 .hostId(hostMemberIdx)
                 .restMemberIds(realTimeMatch.getRestParticipantsId())
                 .nowParticipantsCnt(realTimeMatch.getNowParticipantCnt())

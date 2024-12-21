@@ -8,5 +8,4 @@ import java.util.Optional;
 public interface MatchingRepository extends JpaRepository<Matching, Long> {
 
     Optional<Matching> findByIdx(Long idx);
-
 }
