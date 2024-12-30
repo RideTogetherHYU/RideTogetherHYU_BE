@@ -26,7 +26,7 @@ public class RedisRepository {
     private final MatchingRepository matchingRepository;
     private final ChatRoomRepository chatRoomRepository;
     // 채팅방(topic)에 발행되는 메시지를 처리할 Listner
-    private final RedisMessageListenerContainer redisMessageListener;
+//    private final RedisMessageListenerContainer redisMessageListener;
     // Redis
     private static final String CHAT_ROOMS = "CHAT_ROOM";
     public static final String ENTER_INFO = "ENTER_INFO"; // 채팅룸에 입장한 클라이언트의 sessionId와 채팅룸 id를 맵핑한 정보 저장
