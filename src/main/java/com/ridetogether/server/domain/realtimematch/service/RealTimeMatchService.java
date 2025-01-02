@@ -1,6 +1,7 @@
 package com.ridetogether.server.domain.realtimematch.service;
 
 import com.ridetogether.server.domain.matching.application.MatchingService;
+import com.ridetogether.server.domain.matching.dao.MatchingRepository;
 import com.ridetogether.server.domain.matching.domain.Matching;
 import com.ridetogether.server.domain.matching.dto.MatchingResponseDto;
 import com.ridetogether.server.domain.matching.model.MatchingStatus;
@@ -40,7 +41,7 @@ public class RealTimeMatchService {
     private final RedisTemplate<String, Object> redisTemplate;
     private Map<String, ChannelTopic> topics;
 
-    private final MatchingService matchingService;
+    private final MatchingRepository matchingRepository;
 
     private final MemberRepository memberRepository;
 
@@ -89,7 +90,8 @@ public class RealTimeMatchService {
     // 매칭삭제
     public void deleteMatch(DeleteRealTimeMatchRequest requestDto) {
         RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
-        Matching matching = matchingService.findByIdx(match.getMatchingIdx());
+        Matching matching = matchingRepository.findByIdx(match.getMatchingIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
 
         // 방장만 삭제 가능
         if (!matching.getHostMemberIdx().equals(requestDto.getParticipantId())) {
@@ -102,7 +104,8 @@ public class RealTimeMatchService {
     // 매칭 정보 가져오기
     public RealTimeMatchInfoResponseDto getRealTimeMatchInfo(RealTimeMatchInfoRequest requestDto) {
         RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
-        Long hostMemberIdx = matchingService.findByIdx(match.getMatchingIdx()).getHostMemberIdx();
+        Long hostMemberIdx = matchingRepository.findByIdx(match.getMatchingIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND)).getHostMemberIdx();
 
         return RealTimeMatchInfoResponseDto.builder()
                 .realTimeMatchId(match.getIdx())
@@ -119,7 +122,8 @@ public class RealTimeMatchService {
     // 매칭 참여
     public void enterMatching(EnterAndLeaveMatchRequest requestDto) {
         RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
-        Matching matching = matchingService.findByIdx(match.getMatchingIdx());
+        Matching matching = matchingRepository.findByIdx(match.getMatchingIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
         Member member = memberRepository.findByIdx(requestDto.getParticipantId())
                 .orElseThrow(() -> new ErrorHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
@@ -163,7 +167,8 @@ public class RealTimeMatchService {
     // 매칭 나가기 (방장 제외)
     public void leaveMatching(EnterAndLeaveMatchRequest requestDto) {
         RealTimeMatch match = findRealTimeMatchById(requestDto.getRealTimeMatchId());
-        Matching matching = matchingService.findByIdx(match.getMatchingIdx());
+        Matching matching = matchingRepository.findByIdx(match.getMatchingIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND));
 
         if (matching.getMatchingStatus().equals(MatchingStatus.PROGRESS)) {
             throw new ErrorHandler(ErrorStatus.MATCHING_ALREADY_START);
@@ -196,7 +201,8 @@ public class RealTimeMatchService {
     public RealTimeMatchInfoResponseDto completeMatching(RealTimeMatchInfoRequest request) {
         Long realTimeMatchId = request.getRealTimeMatchId();
         RealTimeMatch realTimeMatch = findRealTimeMatchById(realTimeMatchId);
-        Long hostMemberIdx = matchingService.findByIdx(realTimeMatch.getMatchingIdx()).getHostMemberIdx();
+        Long hostMemberIdx = matchingRepository.findByIdx(realTimeMatch.getMatchingIdx())
+                .orElseThrow(() -> new ErrorHandler(ErrorStatus.MATCHING_NOT_FOUND)).getHostMemberIdx();
 
         realTimeMatch.updateStatusToReady();
         return RealTimeMatchInfoResponseDto.builder()
