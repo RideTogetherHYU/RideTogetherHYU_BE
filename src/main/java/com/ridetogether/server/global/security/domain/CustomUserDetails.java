@@ -25,7 +25,8 @@ public class CustomUserDetails implements UserDetails {
 	private String memberId;
 	@Getter
 	private String email;
-	private String username;
+//	private String username;
+	private String password;
 	private Collection<? extends GrantedAuthority> authorities;
 
 	@ElementCollection(fetch = FetchType.EAGER)
@@ -37,6 +38,7 @@ public class CustomUserDetails implements UserDetails {
 				.memberId(member.getMemberId())
 				.email(member.getEmail())
 				.socialType(member.getSocialType())
+				.password(member.getPassword())
 				.authorities(AuthorityUtils.createAuthorityList(member.getRole().toString()))
 				.build();
 	}
@@ -52,11 +54,15 @@ public class CustomUserDetails implements UserDetails {
 
 	@Override
 	public String getPassword() {
-		return null;
+		return this.password;
 	}
 
 	@Override
 	public String getUsername() {
+		return this.memberId;
+	}
+
+	public String getMemberId() {
 		return this.memberId;
 	}
 

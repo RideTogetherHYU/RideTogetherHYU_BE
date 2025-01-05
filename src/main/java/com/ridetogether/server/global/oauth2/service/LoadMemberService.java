@@ -23,7 +23,7 @@ public class LoadMemberService { // 회원정보 받아오기
         return CustomUserDetails.builder() // 빌더 수정 필요
                 .memberId(userInfo.getId())
                 .email(userInfo.getEmail())
-                .username(userInfo.getName())
+                .memberId(userInfo.getId())
                 .socialType(socialType)
                 .build();
     }
